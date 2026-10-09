@@ -1,0 +1,9 @@
+test/**
+.vscode/**
+*.vsix
+TESTING.md
+scripts/**
+dist/**
+.github/**
+.gitignore
+.gitattributes

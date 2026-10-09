@@ -1,0 +1,73 @@
+{
+  "name": "tmux-easy",
+  "displayName": "Tmux Easy · 轻松管理",
+  "description": "轻量中文 tmux 管理器：选择目录创建会话，支持 Remote-SSH、窗口和分屏管理。",
+  "version": "0.1.0",
+  "publisher": "local-tools",
+  "author": "L-Villcent",
+  "repository": { "type": "git", "url": "https://github.com/L-Villcent/tmux-easy.git" },
+  "homepage": "https://github.com/L-Villcent/tmux-easy#readme",
+  "bugs": { "url": "https://github.com/L-Villcent/tmux-easy/issues" },
+  "license": "MIT",
+  "engines": { "vscode": "^1.93.0" },
+  "categories": ["Other"],
+  "keywords": ["tmux", "ssh", "terminal", "session"],
+  "main": "./extension.js",
+  "extensionKind": ["workspace"],
+  "activationEvents": ["onView:tmuxEasy.sessions"],
+  "capabilities": { "untrustedWorkspaces": { "supported": false }, "virtualWorkspaces": false },
+  "scripts": { "test": "node --test test/*.test.js", "check": "node --check core.js && node --check extension.js", "test:integration": "node --test test/integration.js" },
+  "contributes": {
+    "commands": [
+      { "command": "tmuxEasy.create", "title": "新建会话：选择目录…", "category": "Tmux Easy", "icon": "$(add)" },
+      { "command": "tmuxEasy.createHere", "title": "在当前目录新建 tmux", "category": "Tmux Easy", "icon": "$(new-folder)" },
+      { "command": "tmuxEasy.createAtTerminal", "title": "在当前终端目录新建 tmux", "category": "Tmux Easy" },
+      { "command": "tmuxEasy.attach", "title": "进入会话 / 窗口 / 分屏", "category": "Tmux Easy", "icon": "$(play)" },
+      { "command": "tmuxEasy.refresh", "title": "刷新", "category": "Tmux Easy", "icon": "$(refresh)" },
+      { "command": "tmuxEasy.rename", "title": "重命名", "category": "Tmux Easy", "icon": "$(edit)" },
+      { "command": "tmuxEasy.remove", "title": "结束并删除…", "category": "Tmux Easy", "icon": "$(trash)" },
+      { "command": "tmuxEasy.newWindow", "title": "新建窗口：选择目录…", "category": "Tmux Easy", "icon": "$(add)" },
+      { "command": "tmuxEasy.splitRight", "title": "向右分屏", "category": "Tmux Easy", "icon": "$(split-horizontal)" },
+      { "command": "tmuxEasy.splitDown", "title": "向下分屏", "category": "Tmux Easy", "icon": "$(split-vertical)" },
+      { "command": "tmuxEasy.detach", "title": "断开本插件终端（保留任务）", "category": "Tmux Easy", "icon": "$(debug-disconnect)" },
+      { "command": "tmuxEasy.copyPath", "title": "复制当前目录", "category": "Tmux Easy", "icon": "$(copy)" },
+      { "command": "tmuxEasy.settings", "title": "设置", "category": "Tmux Easy", "icon": "$(gear)" }
+    ],
+    "viewsContainers": { "activitybar": [{ "id": "tmuxEasy", "title": "Tmux Easy", "icon": "media/tmux.svg" }] },
+    "views": { "tmuxEasy": [{ "id": "tmuxEasy.sessions", "name": "会话", "icon": "media/tmux.svg" }] },
+    "menus": {
+      "view/title": [
+        { "command": "tmuxEasy.create", "when": "view == tmuxEasy.sessions", "group": "navigation@1" },
+        { "command": "tmuxEasy.refresh", "when": "view == tmuxEasy.sessions", "group": "navigation@2" },
+        { "command": "tmuxEasy.createHere", "when": "view == tmuxEasy.sessions", "group": "1_create" },
+        { "command": "tmuxEasy.createAtTerminal", "when": "view == tmuxEasy.sessions", "group": "1_create" },
+        { "command": "tmuxEasy.settings", "when": "view == tmuxEasy.sessions", "group": "2_settings" }
+      ],
+      "view/item/context": [
+        { "command": "tmuxEasy.attach", "when": "view == tmuxEasy.sessions", "group": "inline@1" },
+        { "command": "tmuxEasy.newWindow", "when": "view == tmuxEasy.sessions && viewItem == session", "group": "inline@2" },
+        { "command": "tmuxEasy.attach", "when": "view == tmuxEasy.sessions", "group": "1_open@1" },
+        { "command": "tmuxEasy.detach", "when": "view == tmuxEasy.sessions && viewItem == session", "group": "1_open@2" },
+        { "command": "tmuxEasy.newWindow", "when": "view == tmuxEasy.sessions", "group": "2_create@1" },
+        { "command": "tmuxEasy.splitRight", "when": "view == tmuxEasy.sessions", "group": "2_create@2" },
+        { "command": "tmuxEasy.splitDown", "when": "view == tmuxEasy.sessions", "group": "2_create@3" },
+        { "command": "tmuxEasy.rename", "when": "view == tmuxEasy.sessions && viewItem != pane", "group": "3_manage@1" },
+        { "command": "tmuxEasy.copyPath", "when": "view == tmuxEasy.sessions", "group": "3_manage@2" },
+        { "command": "tmuxEasy.remove", "when": "view == tmuxEasy.sessions", "group": "4_delete" }
+      ],
+      "explorer/context": [{ "command": "tmuxEasy.createHere", "when": "resourceScheme == file || resourceScheme == vscode-remote", "group": "navigation@99" }],
+      "editor/context": [{ "command": "tmuxEasy.createHere", "when": "resourceScheme == file || resourceScheme == vscode-remote", "group": "navigation@99" }],
+      "terminal/context": [{ "command": "tmuxEasy.createAtTerminal", "group": "navigation@99" }]
+    },
+    "configuration": {
+      "title": "Tmux Easy",
+      "properties": {
+        "tmuxEasy.tmuxPath": { "type": "string", "default": "tmux", "scope": "machine", "description": "当前主机上的 tmux 可执行文件路径。通常不需要修改。" },
+        "tmuxEasy.socketName": { "type": "string", "default": "", "scope": "machine", "description": "可选的 tmux -L socket 名称；留空管理默认 tmux 服务器。修改后已有终端仍连接原服务器。" },
+        "tmuxEasy.refreshInterval": { "type": "number", "minimum": 0, "maximum": 3600, "default": 10, "description": "侧栏可见时自动刷新的秒数；0 关闭，非零时至少 5 秒。隐藏侧栏或出错后停止轮询。" },
+        "tmuxEasy.attachAfterCreate": { "type": "boolean", "default": true, "description": "新建会话后自动进入终端。" },
+        "tmuxEasy.terminalLocation": { "type": "string", "enum": ["panel", "editor"], "enumDescriptions": ["底部终端面板", "编辑器标签页"], "default": "panel", "description": "新打开的 tmux 终端位置。" }
+      }
+    }
+  }
+}
